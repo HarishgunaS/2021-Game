@@ -1,33 +1,26 @@
-/*This source code copyrighted by Lazy Foo' Productions (2004-2020)
-and may not be redistributed without written permission.*/
+#include <stdio.h>
+#include <string>
+#include "Tilemap.h"
 
-//Using SDL and standard IO
 #ifdef _WIN32
 #include <SDL.h>
 #include <SDL_image.h>
-#include <stdio.h>
-#include <string>
 #endif
 
 #ifdef linux
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include <stdio.h>
-#include <string>
 #endif
 
-//Screen dimension constants
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+const int SCREEN_WIDTH = 1000;
+const int SCREEN_HEIGHT = 1000;
 bool init();
 bool loadMedia();
 void close();
 SDL_Texture* loadTexture(std::string path);
 
-//The window we'll be rendering to
 SDL_Window* window = NULL;
 
-//The surface contained by the window
 SDL_Renderer* renderer = NULL;
 
 SDL_Texture* texture = NULL;
@@ -90,27 +83,22 @@ bool loadMedia()
 
 void close()
 {
-	//Free loaded image
 	SDL_DestroyTexture(texture);
 	texture = NULL;
-
-	//Destroy window    
+ 
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	window = NULL;
 	renderer = NULL;
 
-	//Quit SDL subsystems
 	IMG_Quit();
 	SDL_Quit();
 }
 
 SDL_Texture* loadTexture(std::string path)
 {
-	//The final texture
 	SDL_Texture* newTexture = NULL;
 
-	//Load image at specified path
 	SDL_Surface* loadedSurface = IMG_Load(path.c_str());
 	if (loadedSurface == NULL)
 	{
@@ -118,14 +106,12 @@ SDL_Texture* loadTexture(std::string path)
 	}
 	else
 	{
-		//Create texture from surface pixels
 		newTexture = SDL_CreateTextureFromSurface(renderer, loadedSurface);
 		if (newTexture == NULL)
 		{
 			printf("Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
 		}
 
-		//Get rid of old loaded surface
 		SDL_FreeSurface(loadedSurface);
 	}
 
@@ -138,17 +124,25 @@ int main( int argc, char* args[] )
 		if (loadMedia())
 		{
 			//logic initialization
-			position->x = 500;
-			position->y = 400;
-			position->w = 50;
-			position->h = 50;
+			
+			double x = 500;
+			double y = 400;
 			double xVelocity = 0;
 			double yVelocity = 0;
-			double speed = 1;
+			double speed = 0.2;
 			bool quit = false;
 			SDL_Event e;
 			Uint32 sumDeltaT = 0;
 			Uint32 prevTime = SDL_GetTicks();
+			position->x = x;
+			position->y = y;
+			position->w = 50;
+			position->h = 50;
+			int arr[100] = {0,1,3,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+
+			Tilemap* tilemap = new Tilemap(arr, 10, 10, 50, texture);
+			
 			while (!quit)
 			{
 
@@ -204,15 +198,17 @@ int main( int argc, char* args[] )
 				}
 				//world logic update with delta T
 				double deltaT = SDL_GetTicks() - prevTime;
-				position->x += xVelocity * deltaT;
-				position->y += yVelocity * deltaT;
-				
+				x += xVelocity * deltaT;
+				y += yVelocity * deltaT;
+				position->x = x;
+				position->y = y;
 				
 
 
 				prevTime = SDL_GetTicks();
 				//rendering
 				SDL_RenderClear(renderer);
+				tilemap->render(renderer);
 				SDL_RenderCopy(renderer, texture, NULL, position);
 				SDL_RenderPresent(renderer);
 

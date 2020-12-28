@@ -1,0 +1,4 @@
+﻿  01_hello_SDL.cpp
+D:\Harishguna\Downloads\01_hello_SDL (2)\01_hello_SDL\01_hello_SDL.cpp(198,38): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+D:\Harishguna\Downloads\01_hello_SDL (2)\01_hello_SDL\01_hello_SDL.cpp(199,38): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+  2021 Game.vcxproj -> C:\Users\satgu\source\repos\2021 Game\x64\Debug\2021 Game.exe

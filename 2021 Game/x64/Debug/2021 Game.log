@@ -1,4 +1,6 @@
 ﻿  main.cpp
-C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(207,38): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
-C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(208,38): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(137,18): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(138,18): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(203,19): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(204,19): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
   2021 Game.vcxproj -> C:\Users\satgu\source\repos\2021 Game\x64\Debug\2021 Game.exe

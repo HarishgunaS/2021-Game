@@ -142,10 +142,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="D:\Harishguna\Downloads\01_hello_SDL (2)\01_hello_SDL\01_hello_SDL.cpp" />
+    <Image Include="..\Resources\bmp_24.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\Resources\bmp_24.bmp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

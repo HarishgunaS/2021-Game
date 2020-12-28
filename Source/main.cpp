@@ -2,10 +2,19 @@
 and may not be redistributed without written permission.*/
 
 //Using SDL and standard IO
+#ifdef _WIN32
 #include <SDL.h>
 #include <SDL_image.h>
 #include <stdio.h>
 #include <string>
+#endif
+
+#ifdef linux
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <stdio.h>
+#include <string>
+#endif
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 640;
@@ -70,7 +79,7 @@ bool init()
 bool loadMedia()
 {
 	bool success = true;
-	texture = loadTexture("C:\\Users\\satgu\\Pictures\\bmp_24.bmp");
+	texture = loadTexture("../Resources/bmp_24.bmp");
 	if (texture == NULL)
 	{
 		printf("image load error %s\n", SDL_GetError());

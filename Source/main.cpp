@@ -5,15 +5,20 @@
 #ifdef _WIN32
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_ttf.h>
 #endif
 
 #ifdef linux
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 #endif
-
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+#define ORIGINAL_SIZE 200.0
+#define SIZE 100.0
+const int SCREEN_WIDTH = 8*(SIZE);
+const int SCREEN_HEIGHT = 8*(SIZE);
+const int WORLD_WIDTH = 10*(SIZE);
+const int WORLD_HEIGHT = 10*(SIZE);
 bool init();
 bool loadMedia();
 void close();
@@ -54,12 +59,17 @@ bool init()
 			}
 			else
 			{
-				SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+				SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0x00);
 				int imgFlags = IMG_INIT_PNG;
 				if (!(IMG_Init(imgFlags) & imgFlags))
 				{
 					printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
 					success = false;
+				}
+				if (TTF_Init() == -1)
+				{
+					printf( "SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError() );
+                    success = false;
 				}
 			}
 		}
@@ -125,23 +135,34 @@ int main( int argc, char* args[] )
 		{
 			//logic initialization
 			
-			double x = 500;
-			double y = 400;
+			double x = SCREEN_WIDTH/2 - SIZE/2;
+			double y = SCREEN_HEIGHT/2 - SIZE/2;;
 			double xVelocity = 0;
 			double yVelocity = 0;
-			double speed = 0.2;
+			double speed = 0.2*(SIZE/50);
 			bool quit = false;
 			SDL_Event e;
 			Uint32 sumDeltaT = 0;
 			Uint32 prevTime = SDL_GetTicks();
 			position->x = x;
 			position->y = y;
-			position->w = 50;
-			position->h = 50;
+			position->w = SIZE;
+			position->h = SIZE;
 			int arr[100] = {0,1,3,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+			double cameraX = 0, cameraY = 0;
+			SDL_Rect* camera = new SDL_Rect();
+			SDL_Rect* innerCamera = new SDL_Rect();
+			camera->w = SCREEN_WIDTH;
+			camera->h = SCREEN_HEIGHT;
+			camera->x = cameraX;
+			camera->y = cameraY;
+			innerCamera->w = SCREEN_WIDTH/2;
+			innerCamera->h = SCREEN_HEIGHT/2;
+			innerCamera->x = cameraX+SCREEN_WIDTH/4;
+			innerCamera->y = cameraY+SCREEN_HEIGHT/4;
 
 
-			Tilemap* tilemap = new Tilemap(arr, 10, 10, 50, texture);
+			Tilemap* tilemap = new Tilemap(arr, 10, 10, SIZE, ORIGINAL_SIZE, texture);
 			
 			while (!quit)
 			{
@@ -160,15 +181,19 @@ int main( int argc, char* args[] )
 						{
 						case SDLK_UP:
 							yVelocity = -1.0*speed;
+							xVelocity = 0;
 							break;
 						case SDLK_DOWN:
 							yVelocity = speed;
+							xVelocity = 0;
 							break;
 						case SDLK_LEFT:
 							xVelocity = -1.0*speed;
+							yVelocity = 0;
 							break;
 						case SDLK_RIGHT:
 							xVelocity = speed;
+							yVelocity = 0;
 							break;
 						default:
 							break;
@@ -198,18 +223,84 @@ int main( int argc, char* args[] )
 				}
 				//world logic update with delta T
 				double deltaT = SDL_GetTicks() - prevTime;
-				x += xVelocity * deltaT;
-				y += yVelocity * deltaT;
+				if (x + xVelocity * deltaT >= 0 && x + SIZE + xVelocity * deltaT <= WORLD_WIDTH )
+				{
+					x += xVelocity * deltaT;
+				}
+				if (y + yVelocity * deltaT >= 0 && y + SIZE + yVelocity * deltaT <= WORLD_HEIGHT )
+				{
+					y += yVelocity * deltaT;
+				}
 				position->x = x;
 				position->y = y;
 				
 
 
 				prevTime = SDL_GetTicks();
+				
+				
+
+
+				//camera adjustments
+				if (xVelocity* deltaT > 0)
+				{
+					if (position->x + position->w > innerCamera->x + innerCamera->w)
+					{
+						if (cameraX + xVelocity * deltaT <= WORLD_WIDTH - SCREEN_WIDTH)
+						{
+							cameraX += xVelocity * deltaT;
+						}
+						
+					}
+				}
+				else if (xVelocity* deltaT < 0)
+				{
+					if (position->x < innerCamera->x)
+					{
+						if (cameraX + xVelocity * deltaT >= 0)
+						{
+							cameraX += xVelocity * deltaT;
+						}
+					}
+				}
+				else if (yVelocity* deltaT > 0)
+				{
+					if (position->y + position->h > innerCamera->y + innerCamera->h)
+					{
+						if (cameraY + yVelocity * deltaT <= WORLD_HEIGHT - SCREEN_HEIGHT)
+						{
+							cameraY += yVelocity * deltaT;
+						}
+						
+					}
+				}
+				else if (yVelocity* deltaT < 0)
+				{
+					if (position->y < innerCamera->y)
+					{
+						if (cameraY + yVelocity * deltaT >= 0)
+						{
+							cameraY += yVelocity * deltaT;
+						}
+					}
+				}
+				innerCamera->x = cameraX+SCREEN_WIDTH/4;
+				innerCamera->y = cameraY+SCREEN_HEIGHT/4;
+				camera->x = cameraX;
+				camera->y = cameraY;
+				position->x = position->x - camera->x;
+				position->y = position->y - camera->y;
+				
+
 				//rendering
+
+				//clear renderer
 				SDL_RenderClear(renderer);
-				tilemap->render(renderer);
+				//render tilemap
+				tilemap->render(renderer, camera);
+				//render player
 				SDL_RenderCopy(renderer, texture, NULL, position);
+				//present frame
 				SDL_RenderPresent(renderer);
 
 			}

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string>
 #include "Tilemap.h"
+#include "Camera.h"
 
 #ifdef _WIN32
 #include <SDL.h>
@@ -30,8 +31,41 @@ SDL_Renderer* renderer = NULL;
 
 SDL_Texture* texture = NULL;
 
+TTF_Font* font = NULL;
+
+SDL_Texture* text = NULL;
+SDL_Rect* textPosition = new SDL_Rect();
 SDL_Rect* position = new SDL_Rect();
 
+void setText(std::string string, SDL_Color color)
+{
+	printf("here");
+	SDL_DestroyTexture(text);
+	text = NULL;
+	SDL_Surface* textSurface = TTF_RenderText_Solid( font, string.c_str(), color );
+    if( textSurface == NULL )
+    {
+        printf( "Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError() );
+    }
+    else
+    {
+        //Create texture from surface pixels
+        text = SDL_CreateTextureFromSurface( renderer, textSurface );
+        if( text == NULL )
+        {
+            printf( "Unable to create texture from rendered text! SDL Error: %s\n", SDL_GetError() );
+        }
+        else
+        {
+            //Get image dimensions
+            textPosition->w = textSurface->w;
+            textPosition->h = textSurface->h;
+        }
+
+        //Get rid of old surface
+        SDL_FreeSurface( textSurface );
+    }
+}
 bool init()
 {
 	bool success = true;
@@ -82,6 +116,12 @@ bool init()
 bool loadMedia()
 {
 	bool success = true;
+	font = TTF_OpenFont( "../Resources/gothic_pixel.ttf", SIZE );
+    if( font == NULL )
+    {
+        printf( "Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError() );
+        success = false;
+    }
 	texture = loadTexture("../Resources/bmp_24.bmp");
 	if (texture == NULL)
 	{
@@ -149,21 +189,16 @@ int main( int argc, char* args[] )
 			position->w = SIZE;
 			position->h = SIZE;
 			int arr[100] = {0,1,3,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-			double cameraX = 0, cameraY = 0;
-			SDL_Rect* camera = new SDL_Rect();
-			SDL_Rect* innerCamera = new SDL_Rect();
-			camera->w = SCREEN_WIDTH;
-			camera->h = SCREEN_HEIGHT;
-			camera->x = cameraX;
-			camera->y = cameraY;
-			innerCamera->w = SCREEN_WIDTH/2;
-			innerCamera->h = SCREEN_HEIGHT/2;
-			innerCamera->x = cameraX+SCREEN_WIDTH/4;
-			innerCamera->y = cameraY+SCREEN_HEIGHT/4;
+			Camera* camera = new Camera(WORLD_WIDTH, WORLD_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0);
+
 
 
 			Tilemap* tilemap = new Tilemap(arr, 10, 10, SIZE, ORIGINAL_SIZE, texture);
-			
+			SDL_Color textColor = {0,0,0};
+			setText("Hm.", textColor);
+			textPosition->y = SCREEN_HEIGHT - textPosition->h;
+			textPosition->x = 0;
+
 			while (!quit)
 			{
 
@@ -236,70 +271,28 @@ int main( int argc, char* args[] )
 				
 
 
-				prevTime = SDL_GetTicks();
+				//prevTime = SDL_GetTicks();
 				
 				
 
 
 				//camera adjustments
-				if (xVelocity* deltaT > 0)
-				{
-					if (position->x + position->w > innerCamera->x + innerCamera->w)
-					{
-						if (cameraX + xVelocity * deltaT <= WORLD_WIDTH - SCREEN_WIDTH)
-						{
-							cameraX += xVelocity * deltaT;
-						}
-						
-					}
-				}
-				else if (xVelocity* deltaT < 0)
-				{
-					if (position->x < innerCamera->x)
-					{
-						if (cameraX + xVelocity * deltaT >= 0)
-						{
-							cameraX += xVelocity * deltaT;
-						}
-					}
-				}
-				else if (yVelocity* deltaT > 0)
-				{
-					if (position->y + position->h > innerCamera->y + innerCamera->h)
-					{
-						if (cameraY + yVelocity * deltaT <= WORLD_HEIGHT - SCREEN_HEIGHT)
-						{
-							cameraY += yVelocity * deltaT;
-						}
-						
-					}
-				}
-				else if (yVelocity* deltaT < 0)
-				{
-					if (position->y < innerCamera->y)
-					{
-						if (cameraY + yVelocity * deltaT >= 0)
-						{
-							cameraY += yVelocity * deltaT;
-						}
-					}
-				}
-				innerCamera->x = cameraX+SCREEN_WIDTH/4;
-				innerCamera->y = cameraY+SCREEN_HEIGHT/4;
-				camera->x = cameraX;
-				camera->y = cameraY;
-				position->x = position->x - camera->x;
-				position->y = position->y - camera->y;
+				camera->update(deltaT, xVelocity, yVelocity, position);
+
+				position->x = position->x - camera->returnX();
+				position->y = position->y - camera->returnY();
 				
+				prevTime = SDL_GetTicks();
 
 				//rendering
 
 				//clear renderer
 				SDL_RenderClear(renderer);
 				//render tilemap
-				tilemap->render(renderer, camera);
+				tilemap->render(renderer, camera->returnRect());
 				//render player
 				SDL_RenderCopy(renderer, texture, NULL, position);
+				SDL_RenderCopy(renderer, text, NULL, textPosition);
 				//present frame
 				SDL_RenderPresent(renderer);
 

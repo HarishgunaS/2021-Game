@@ -2,6 +2,8 @@
 #include <string>
 #include "Tilemap.h"
 #include "Camera.h"
+#include "Text.h"
+//#include "Player.h" included in Camera.h
 
 #ifdef _WIN32
 #include <SDL.h>
@@ -33,39 +35,6 @@ SDL_Texture* texture = NULL;
 
 TTF_Font* font = NULL;
 
-SDL_Texture* text = NULL;
-SDL_Rect* textPosition = new SDL_Rect();
-SDL_Rect* position = new SDL_Rect();
-
-void setText(std::string string, SDL_Color color)
-{
-	printf("here");
-	SDL_DestroyTexture(text);
-	text = NULL;
-	SDL_Surface* textSurface = TTF_RenderText_Solid( font, string.c_str(), color );
-    if( textSurface == NULL )
-    {
-        printf( "Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError() );
-    }
-    else
-    {
-        //Create texture from surface pixels
-        text = SDL_CreateTextureFromSurface( renderer, textSurface );
-        if( text == NULL )
-        {
-            printf( "Unable to create texture from rendered text! SDL Error: %s\n", SDL_GetError() );
-        }
-        else
-        {
-            //Get image dimensions
-            textPosition->w = textSurface->w;
-            textPosition->h = textSurface->h;
-        }
-
-        //Get rid of old surface
-        SDL_FreeSurface( textSurface );
-    }
-}
 bool init()
 {
 	bool success = true;
@@ -174,35 +143,27 @@ int main( int argc, char* args[] )
 		if (loadMedia())
 		{
 			//logic initialization
-			
-			double x = SCREEN_WIDTH/2 - SIZE/2;
-			double y = SCREEN_HEIGHT/2 - SIZE/2;;
-			double xVelocity = 0;
-			double yVelocity = 0;
-			double speed = 0.2*(SIZE/50);
+			Player* player = new Player(texture, SCREEN_WIDTH / 2 - SIZE / 2, SCREEN_HEIGHT / 2 - SIZE / 2, 0.2 * (SIZE / 50), SIZE);
+
 			bool quit = false;
 			SDL_Event e;
 			Uint32 sumDeltaT = 0;
 			Uint32 prevTime = SDL_GetTicks();
-			position->x = x;
-			position->y = y;
-			position->w = SIZE;
-			position->h = SIZE;
 			int arr[100] = {0,1,3,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 			Camera* camera = new Camera(WORLD_WIDTH, WORLD_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0);
 
 
 
-			Tilemap* tilemap = new Tilemap(arr, 10, 10, SIZE, ORIGINAL_SIZE, texture);
+			Tilemap* tilemap = new Tilemap(arr, 10, 10, SIZE, ORIGINAL_SIZE, texture); //(use multiple tilemaps for more depth) 
 			SDL_Color textColor = {0,0,0};
-			setText("Hm.", textColor);
-			textPosition->y = SCREEN_HEIGHT - textPosition->h;
-			textPosition->x = 0;
+			Text* text = new Text(font, textColor);
+			text->setText("Hello there", renderer);
+			text->setPosition(0, SCREEN_HEIGHT - text->getRect()->h);
 
 			while (!quit)
 			{
 
-
+				double deltaT = SDL_GetTicks() - prevTime;
 				//Event manager
 				while (SDL_PollEvent(&e) != 0)
 				{
@@ -210,64 +171,11 @@ int main( int argc, char* args[] )
 					{
 						quit = true;
 					}
-					else if (e.type == SDL_KEYDOWN)
-					{
-						switch (e.key.keysym.sym)
-						{
-						case SDLK_UP:
-							yVelocity = -1.0*speed;
-							xVelocity = 0;
-							break;
-						case SDLK_DOWN:
-							yVelocity = speed;
-							xVelocity = 0;
-							break;
-						case SDLK_LEFT:
-							xVelocity = -1.0*speed;
-							yVelocity = 0;
-							break;
-						case SDLK_RIGHT:
-							xVelocity = speed;
-							yVelocity = 0;
-							break;
-						default:
-							break;
-						}
-					}
-					else if (e.type == SDL_KEYUP)
-					{
-						switch (e.key.keysym.sym)
-						{
-						case SDLK_UP:
-							yVelocity = 0;
-							break;
-						case SDLK_DOWN:
-							yVelocity = 0;
-							break;
-						case SDLK_LEFT:
-							xVelocity = 0;
-							break;
-						case SDLK_RIGHT:
-							xVelocity = 0;
-							break;
-						default:
-							break;
-						}
-					}
+					player->input(e);
 
 				}
 				//world logic update with delta T
-				double deltaT = SDL_GetTicks() - prevTime;
-				if (x + xVelocity * deltaT >= 0 && x + SIZE + xVelocity * deltaT <= WORLD_WIDTH )
-				{
-					x += xVelocity * deltaT;
-				}
-				if (y + yVelocity * deltaT >= 0 && y + SIZE + yVelocity * deltaT <= WORLD_HEIGHT )
-				{
-					y += yVelocity * deltaT;
-				}
-				position->x = x;
-				position->y = y;
+				player->update(deltaT, WORLD_WIDTH, WORLD_HEIGHT);
 				
 
 
@@ -277,10 +185,9 @@ int main( int argc, char* args[] )
 
 
 				//camera adjustments
-				camera->update(deltaT, xVelocity, yVelocity, position);
+				camera->update(deltaT, player);
 
-				position->x = position->x - camera->returnX();
-				position->y = position->y - camera->returnY();
+				
 				
 				prevTime = SDL_GetTicks();
 
@@ -288,11 +195,12 @@ int main( int argc, char* args[] )
 
 				//clear renderer
 				SDL_RenderClear(renderer);
-				//render tilemap
+				//render tilemap (use multiple tilemaps for more depth)
 				tilemap->render(renderer, camera->returnRect());
 				//render player
-				SDL_RenderCopy(renderer, texture, NULL, position);
-				SDL_RenderCopy(renderer, text, NULL, textPosition);
+				player->render(renderer);
+				//render text
+				text->render(renderer);
 				//present frame
 				SDL_RenderPresent(renderer);
 

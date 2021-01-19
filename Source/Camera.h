@@ -6,7 +6,7 @@
 #include <SDL2/SDL.h>
 #endif
 #include <stdio.h>
-
+#include "Player.h"
 class Camera
 {
 public:
@@ -28,6 +28,8 @@ public:
     }
     Camera(int W_WIDTH, int W_HEIGHT, int SCREEN_WIDTH, int SCREEN_HEIGHT, int cX, int cY)
     {
+        WORLD_WIDTH = W_WIDTH;
+        WORLD_HEIGHT = W_HEIGHT;
         cameraX = cX;
         cameraY = cY;
         camera = new SDL_Rect();
@@ -41,49 +43,50 @@ public:
         innerCamera->x = cameraX + SCREEN_WIDTH/4;
         innerCamera->y = cameraY + SCREEN_HEIGHT/4;
     }
-    void update(double deltaT, double xVelocity, double yVelocity, SDL_Rect* position)
+    void update(double deltaT, Player* player)
     {
         
-        if (xVelocity * deltaT > 0)
+        if (player->getXVelocity() * deltaT > 0)
         {
-            if (position->x + position->w > innerCamera->x + innerCamera->w)
+            if (player->getPosition()->x + player->getPosition()->w > innerCamera->x + innerCamera->w)
             {
-                if (cameraX + xVelocity * deltaT <= WORLD_WIDTH - camera->w)
+                if (cameraX + player->getXVelocity() * deltaT <= (double)(WORLD_WIDTH) -(double)(camera->w))
                 {
-                    cameraX += xVelocity * deltaT;
+                    cameraX += player->getXVelocity() * deltaT;
                 }
                 
             }
             
         }
-        else if (xVelocity* deltaT < 0)
+        else if (player->getXVelocity()* deltaT < 0)
         {
-            if (position->x < innerCamera->x)
+            if (player->getPosition()->x < innerCamera->x)
             {
-                if (cameraX + xVelocity * deltaT >= 0)
+                if (cameraX + player->getXVelocity() * deltaT >= 0)
                 {
-                    cameraX += xVelocity * deltaT;
+                    cameraX += player->getXVelocity() * deltaT;
                 }
             }
         }
-        else if (yVelocity* deltaT > 0)
+        else if (player->getYVelocity()* deltaT > 0)
         {
-            if (position->y + position->h > innerCamera->y + innerCamera->h)
+            
+            if (player->getPosition()->y + player->getPosition()->h > innerCamera->y + innerCamera->h)
             {
-                if (cameraY + yVelocity * deltaT <= WORLD_HEIGHT - camera->h)
+                if (cameraY + player->getYVelocity() * deltaT <= (double)(WORLD_HEIGHT) -(double)(camera->h))
                 {
-                    cameraY += yVelocity * deltaT;
+                    cameraY += player->getYVelocity() * deltaT;
                 }
                 
             }
         }
-        else if (yVelocity* deltaT < 0)
+        else if (player->getYVelocity()* deltaT < 0)
         {
-            if (position->y < innerCamera->y)
+            if (player->getPosition()->y < innerCamera->y)
             {
-                if (cameraY + yVelocity * deltaT >= 0)
+                if (cameraY + player->getYVelocity() * deltaT >= 0)
                 {
-                    cameraY += yVelocity * deltaT;
+                    cameraY += player->getYVelocity() * deltaT;
                 }
             }
         }
@@ -91,7 +94,8 @@ public:
         innerCamera->y = cameraY+camera->h/4;
         camera->x = cameraX;
         camera->y = cameraY;
-
+        player->getPosition()->x = player->getPosition()->x - cameraX;
+        player->getPosition()->y = player->getPosition()->y - cameraY;
     }
     double returnX() {return cameraX;}
     double returnY() {return cameraY;}

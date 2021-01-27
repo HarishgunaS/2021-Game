@@ -6,7 +6,7 @@
 #include <SDL2/SDL.h>
 #endif
 #include <stdio.h>
-#include "Player.h"
+#include "PhysicsComponent.h"
 class Camera
 {
 public:
@@ -43,7 +43,7 @@ public:
         innerCamera->x = cameraX + SCREEN_WIDTH/4;
         innerCamera->y = cameraY + SCREEN_HEIGHT/4;
     }
-    void update(double deltaT, Player* player)
+    void update(Uint32 deltaT, PhysicsComponent* player)
     {
         
         if (player->getXVelocity() * deltaT > 0)

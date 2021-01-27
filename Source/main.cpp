@@ -3,6 +3,7 @@
 #include "Tilemap.h"
 #include "Camera.h"
 #include "Text.h"
+#include "Entity.h"
 //#include "Player.h" included in Camera.h
 
 #ifdef _WIN32
@@ -143,7 +144,6 @@ int main( int argc, char* args[] )
 		if (loadMedia())
 		{
 			//logic initialization
-			Player* player = new Player(texture, SCREEN_WIDTH / 2 - SIZE / 2, SCREEN_HEIGHT / 2 - SIZE / 2, 0.2 * (SIZE / 50), SIZE);
 
 			bool quit = false;
 			SDL_Event e;
@@ -151,7 +151,11 @@ int main( int argc, char* args[] )
 			Uint32 prevTime = SDL_GetTicks();
 			int arr[100] = {0,1,3,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 			Camera* camera = new Camera(WORLD_WIDTH, WORLD_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0);
-
+			Entity* entity = new Entity("player");
+			entity->physics = new PhysicsComponent(SCREEN_WIDTH / 2 - SIZE / 2, SCREEN_HEIGHT / 2 - SIZE / 2, 0.2 * (SIZE / 50), SIZE, WORLD_WIDTH, WORLD_HEIGHT);
+			entity->input = new InputComponent(entity->physics);
+			entity->graphics = new GraphicsComponent(texture);
+			
 
 
 			Tilemap* tilemap = new Tilemap(arr, 10, 10, SIZE, ORIGINAL_SIZE, texture); //(use multiple tilemaps for more depth) 
@@ -163,7 +167,7 @@ int main( int argc, char* args[] )
 			while (!quit)
 			{
 
-				double deltaT = SDL_GetTicks() - prevTime;
+				Uint32 deltaT = SDL_GetTicks() - prevTime;
 				//Event manager
 				while (SDL_PollEvent(&e) != 0)
 				{
@@ -171,13 +175,12 @@ int main( int argc, char* args[] )
 					{
 						quit = true;
 					}
-					player->input(e);
+					entity->input->input(e);
 
 				}
 				//world logic update with delta T
-				player->update(deltaT, WORLD_WIDTH, WORLD_HEIGHT);
-				
-
+				entity->update(deltaT);
+				text->setText(std::to_string(entity->physics->getPosition()->x) + ", " + std::to_string(entity->physics->getPosition()->y), renderer);
 
 				//prevTime = SDL_GetTicks();
 				
@@ -185,7 +188,7 @@ int main( int argc, char* args[] )
 
 
 				//camera adjustments
-				camera->update(deltaT, player);
+				camera->update(deltaT, entity->physics);
 
 				
 				
@@ -198,7 +201,7 @@ int main( int argc, char* args[] )
 				//render tilemap (use multiple tilemaps for more depth)
 				tilemap->render(renderer, camera->returnRect());
 				//render player
-				player->render(renderer);
+				entity->render(renderer);
 				//render text
 				text->render(renderer);
 				//present frame

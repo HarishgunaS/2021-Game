@@ -47,7 +47,6 @@ public:
             }
         }
     }
-private:
     int w, h, size, original_size;
     int* arr;
     SDL_Texture* textures;

@@ -10,33 +10,25 @@
 class PhysicsComponent : public Component
 {
 public:
-	PhysicsComponent(int xPos, int yPos, double s, int size, int wwidth, int wheight)
+	PhysicsComponent(int xPos, int yPos, double s, int size)
 	{
 		position = new SDL_Rect();
 		position->x = xPos;
 		position->y = yPos;
 		position->w = size;
 		position->h = size;
+
+		collider = new SDL_Rect();
+		collider->x = xPos;
+		collider->y = yPos;
+		collider->w = size;
+		collider->h = size;
+
 		x = xPos;
 		y = yPos;
 		xVelocity = 0;
 		yVelocity = 0;
 		speed = s;
-		WORLD_WIDTH = wwidth;
-		WORLD_HEIGHT = wheight;
-	}
-	void update(Uint32 deltaT)
-	{
-		if (x + xVelocity * deltaT >= 0 && x + position->w + xVelocity * deltaT <= WORLD_WIDTH)
-		{
-			x += xVelocity * deltaT;
-		}
-		if (y + yVelocity * deltaT >= 0 && y + position->h + yVelocity * deltaT <= WORLD_HEIGHT)
-		{
-			y += yVelocity * deltaT;
-		}
-		position->x = x;
-		position->y = y;
 	}
 	SDL_Rect* getPosition()
 	{
@@ -62,8 +54,7 @@ public:
 	{
 		return speed;
 	}
-private:
 	SDL_Rect* position;
+	SDL_Rect* collider;
 	double x, y, xVelocity, yVelocity, speed;
-	int WORLD_WIDTH, WORLD_HEIGHT;
 };

@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <string>
-#include "Tilemap.h"
+//#include "Tilemap.h"
 #include "Camera.h"
 #include "Text.h"
 #include "Entity.h"
+#include "ECSManager.h"
+#include "World.h"
 //#include "Player.h" included in Camera.h
 
 #ifdef _WIN32
@@ -26,6 +28,7 @@ const int WORLD_HEIGHT = 10*(SIZE);
 bool init();
 bool loadMedia();
 void close();
+
 SDL_Texture* loadTexture(std::string path);
 
 SDL_Window* window = NULL;
@@ -151,14 +154,39 @@ int main( int argc, char* args[] )
 			Uint32 prevTime = SDL_GetTicks();
 			int arr[100] = {0,1,3,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 			Camera* camera = new Camera(WORLD_WIDTH, WORLD_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0);
-			Entity* entity = new Entity("player");
-			entity->physics = new PhysicsComponent(SCREEN_WIDTH / 2 - SIZE / 2, SCREEN_HEIGHT / 2 - SIZE / 2, 0.2 * (SIZE / 50), SIZE, WORLD_WIDTH, WORLD_HEIGHT);
-			entity->input = new InputComponent(entity->physics);
-			entity->graphics = new GraphicsComponent(texture);
 			
+			Tilemap* tilemap = new Tilemap(arr, 10, 10, SIZE, ORIGINAL_SIZE, texture); //(use multiple tilemaps for more depth)
+			
+			World* world = new World(tilemap);
+			ECSManager* ecsManager = new ECSManager(world);
+			
+			Entity* player = ecsManager->generateEntity();
+			player->physics = new PhysicsComponent(SCREEN_WIDTH / 2 - SIZE / 2, SCREEN_HEIGHT / 2 - SIZE / 2, 0.2 * (SIZE / 50), SIZE);
+			player->graphics = new GraphicsComponent(texture);
+			Entity* enemy = ecsManager->generateEntity();
+			enemy->physics = new PhysicsComponent(120, 120, 0.2 * (SIZE / 50), SIZE);
+			enemy->graphics = new GraphicsComponent(texture);
+			/*Entity* enemy2 = new Entity("enemy");
+			enemy2->physics = new PhysicsComponent(120, 120, 0.2 * (SIZE / 50), SIZE, WORLD_WIDTH, WORLD_HEIGHT);
+			enemy2->graphics = new GraphicsComponent(texture);
+			Entity* enemy3 = new Entity("enemy");
+			enemy3->physics = new PhysicsComponent(120, 120, 0.2 * (SIZE / 50), SIZE, WORLD_WIDTH, WORLD_HEIGHT);
+			enemy3->graphics = new GraphicsComponent(texture);
+			Entity* enemy4 = new Entity("enemy");
+			enemy4->physics = new PhysicsComponent(120, 120, 0.2 * (SIZE / 50), SIZE, WORLD_WIDTH, WORLD_HEIGHT);
+			enemy4->graphics = new GraphicsComponent(texture);
+			Entity* enemy5 = new Entity("enemy");
+			enemy5->physics = new PhysicsComponent(120, 120, 0.2 * (SIZE / 50), SIZE, WORLD_WIDTH, WORLD_HEIGHT);
+			enemy5->graphics = new GraphicsComponent(texture);
+			Entity* enemy6 = new Entity("enemy");
+			enemy6->physics = new PhysicsComponent(120, 120, 0.2 * (SIZE / 50), SIZE, WORLD_WIDTH, WORLD_HEIGHT);
+			enemy6->graphics = new GraphicsComponent(texture);
+			Entity* enemy7 = new Entity("enemy");
+			enemy7->physics = new PhysicsComponent(120, 120, 0.2 * (SIZE / 50), SIZE, WORLD_WIDTH, WORLD_HEIGHT);
+			enemy7->graphics = new GraphicsComponent(texture);*/
 
 
-			Tilemap* tilemap = new Tilemap(arr, 10, 10, SIZE, ORIGINAL_SIZE, texture); //(use multiple tilemaps for more depth) 
+			 
 			SDL_Color textColor = {0,0,0};
 			Text* text = new Text(font, textColor);
 			text->setText("Hello there", renderer);
@@ -175,12 +203,12 @@ int main( int argc, char* args[] )
 					{
 						quit = true;
 					}
-					entity->input->input(e);
+					ecsManager->input(e);
 
 				}
 				//world logic update with delta T
-				entity->update(deltaT);
-				text->setText(std::to_string(entity->physics->getPosition()->x) + ", " + std::to_string(entity->physics->getPosition()->y), renderer);
+				ecsManager->update(deltaT);
+				text->setText(std::to_string(player->physics->getPosition()->x) + ", " + std::to_string(player->physics->getPosition()->y), renderer);
 
 				//prevTime = SDL_GetTicks();
 				
@@ -188,7 +216,7 @@ int main( int argc, char* args[] )
 
 
 				//camera adjustments
-				camera->update(deltaT, entity->physics);
+				camera->update(deltaT, player->physics);
 
 				
 				
@@ -201,7 +229,7 @@ int main( int argc, char* args[] )
 				//render tilemap (use multiple tilemaps for more depth)
 				tilemap->render(renderer, camera->returnRect());
 				//render player
-				entity->render(renderer);
+				ecsManager->render(renderer, camera->returnRect());
 				//render text
 				text->render(renderer);
 				//present frame

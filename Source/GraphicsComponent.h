@@ -15,15 +15,5 @@ public:
 	{
 		texture = t;
 	}
-	void update()
-	{
-
-	}
-	void render(SDL_Renderer* renderer, PhysicsComponent* physics)
-	{
-		SDL_RenderCopy(renderer, texture, NULL, physics->getPosition());
-	}
-	
-private:
 	SDL_Texture* texture = NULL;
 };

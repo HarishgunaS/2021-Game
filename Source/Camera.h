@@ -94,8 +94,6 @@ public:
         innerCamera->y = cameraY+camera->h/4;
         camera->x = cameraX;
         camera->y = cameraY;
-        player->getPosition()->x = player->getPosition()->x - cameraX;
-        player->getPosition()->y = player->getPosition()->y - cameraY;
     }
     double returnX() {return cameraX;}
     double returnY() {return cameraY;}

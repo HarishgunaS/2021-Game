@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -145,17 +145,20 @@
     <Image Include="..\Resources\bmp_24.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Source\ECSManager.cpp" />
     <ClCompile Include="..\Source\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Camera.h" />
+    <ClInclude Include="..\Source\CombatComponent.h" />
     <ClInclude Include="..\Source\Component.h" />
+    <ClInclude Include="..\Source\ECSManager.h" />
     <ClInclude Include="..\Source\Entity.h" />
     <ClInclude Include="..\Source\GraphicsComponent.h" />
-    <ClInclude Include="..\Source\InputComponent.h" />
     <ClInclude Include="..\Source\PhysicsComponent.h" />
     <ClInclude Include="..\Source\Text.h" />
     <ClInclude Include="..\Source\Tilemap.h" />
+    <ClInclude Include="..\Source\World.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="TODO.md" />

@@ -1,6 +1,7 @@
-﻿  main.cpp
-C:\Users\satgu\source\repos\2021 Game\Source\PhysicsComponent.h(38,17): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-C:\Users\satgu\source\repos\2021 Game\Source\PhysicsComponent.h(39,17): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+﻿  ECSManager.cpp
+C:\Users\satgu\source\repos\2021 Game\Source\ECSManager.h(55,35): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\satgu\source\repos\2021 Game\Source\ECSManager.h(56,35): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+  main.cpp
 C:\Users\satgu\source\repos\2021 Game\Source\Camera.h(39,21): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
 C:\Users\satgu\source\repos\2021 Game\Source\Camera.h(40,21): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
 C:\Users\satgu\source\repos\2021 Game\Source\Camera.h(43,34): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
@@ -9,16 +10,18 @@ C:\Users\satgu\source\repos\2021 Game\Source\Camera.h(93,33): warning C4244: '='
 C:\Users\satgu\source\repos\2021 Game\Source\Camera.h(94,33): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
 C:\Users\satgu\source\repos\2021 Game\Source\Camera.h(95,21): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
 C:\Users\satgu\source\repos\2021 Game\Source\Camera.h(96,21): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-C:\Users\satgu\source\repos\2021 Game\Source\Camera.h(97,61): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-C:\Users\satgu\source\repos\2021 Game\Source\Camera.h(98,61): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(22,27): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(23,28): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\satgu\source\repos\2021 Game\Source\ECSManager.h(55,35): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\satgu\source\repos\2021 Game\Source\ECSManager.h(56,35): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
 C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(24,27): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
 C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(25,28): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(89,56): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(155,121): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(155,90): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(155,60): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(161,54): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(161,48): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(26,27): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(27,28): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(92,56): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(158,54): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(158,48): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(164,121): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(164,90): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(164,60): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+C:\Users\satgu\source\repos\2021 Game\Source\main.cpp(167,71): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  Generating Code...
   2021 Game.vcxproj -> C:\Users\satgu\source\repos\2021 Game\x64\Debug\2021 Game.exe

@@ -160,12 +160,12 @@ int main( int argc, char* args[] )
 			World* world = new World(tilemap);
 			ECSManager* ecsManager = new ECSManager(world);
 			
-			Entity* player = ecsManager->generateEntity();
-			player->physics = new PhysicsComponent(SCREEN_WIDTH / 2 - SIZE / 2, SCREEN_HEIGHT / 2 - SIZE / 2, 0.2 * (SIZE / 50), SIZE);
-			player->graphics = new GraphicsComponent(texture);
-			Entity* enemy = ecsManager->generateEntity();
-			enemy->physics = new PhysicsComponent(120, 120, 0.2 * (SIZE / 50), SIZE);
-			enemy->graphics = new GraphicsComponent(texture);
+			Uint32 player = ecsManager->generateEntity();
+			ecsManager->addPhysicsComponent(player, new PhysicsComponent(SCREEN_WIDTH / 2 - SIZE / 2, SCREEN_HEIGHT / 2 - SIZE / 2, 0.2 * (SIZE / 50), SIZE));
+			ecsManager->addGraphicsComponent(player, new GraphicsComponent(texture));
+			Uint32 enemy = ecsManager->generateEntity();
+			ecsManager->addPhysicsComponent(enemy,new PhysicsComponent(120, 120, 0.2 * (SIZE / 50), SIZE));
+			ecsManager->addGraphicsComponent(enemy, new GraphicsComponent(texture));
 			/*Entity* enemy2 = new Entity("enemy");
 			enemy2->physics = new PhysicsComponent(120, 120, 0.2 * (SIZE / 50), SIZE, WORLD_WIDTH, WORLD_HEIGHT);
 			enemy2->graphics = new GraphicsComponent(texture);
@@ -208,7 +208,7 @@ int main( int argc, char* args[] )
 				}
 				//world logic update with delta T
 				ecsManager->update(deltaT);
-				text->setText(std::to_string(player->physics->getPosition()->x) + ", " + std::to_string(player->physics->getPosition()->y), renderer);
+				text->setText(std::to_string((ecsManager->getPhysicsComponent(player))->getPosition()->x) + ", " + std::to_string((ecsManager->getPhysicsComponent(player))->getPosition()->y), renderer);
 
 				//prevTime = SDL_GetTicks();
 				
@@ -216,7 +216,7 @@ int main( int argc, char* args[] )
 
 
 				//camera adjustments
-				camera->update(deltaT, player->physics);
+				camera->update(deltaT, (ecsManager->getPhysicsComponent(player)));
 
 				
 				

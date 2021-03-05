@@ -5,6 +5,7 @@
 #include <string>
 #include "World.h"
 #include <iostream>
+#include <stdio.h>
 #ifdef _WIN32
 #include <SDL.h>
 #endif
@@ -64,11 +65,12 @@ public:
 			PhysicsComponent* physics = pair.second;
 			//make more robust obviously
 
+
+			//grid bucket to check around
 			int previousBucketX = (physics->collider->x + physics->collider->w / 2) / world->size;
 			int previousBucketY = (physics->collider->y + physics->collider->h / 2) / world->size;
 
-			
-
+			//move temp x y if within borders
 			if (physics->x + physics->xVelocity * deltaT >= 0 && physics->x + physics->position->w + physics->xVelocity * deltaT <= world->WORLD_WIDTH)
 			{
 				physics->x += physics->xVelocity * deltaT;
@@ -78,7 +80,7 @@ public:
 				physics->y += physics->yVelocity * deltaT;
 			}
 
-
+			//new collider of future position
 			SDL_Rect* newCollider = new SDL_Rect();
 			newCollider->w = physics->collider->w;
 			newCollider->h = physics->collider->h;
@@ -86,17 +88,15 @@ public:
 			newCollider->y = physics->y;
 
 			bool collisionOccurred = false;
-
-
-			for (int i = previousBucketX - 1; i < previousBucketX + 1; i++)
+			for (int i = previousBucketX - 2; i < previousBucketX + 2; i++)
 			{
-				if (i == -1 || i == world->w)
+				if (i < 0 || i >= world->w)
 				{
 					continue;
 				}
-				for (int j = previousBucketY - 1; j < previousBucketY + 1; j++)
+				for (int j = previousBucketY - 2; j < previousBucketY + 2; j++)
 				{
-					if (j == -1 || j == world->h)
+					if (j < 0 || j >= world->h)
 					{
 						continue;
 					}
@@ -170,24 +170,12 @@ public:
 				PhysicsComponent* physics = physicsComponents[pair.first];
 				if (SDL_HasIntersection(physics->getPosition(), camera) == SDL_TRUE)
 				{
-
 					physics->getPosition()->x = physics->getPosition()->x - camera->x;
 					physics->getPosition()->y = physics->getPosition()->y - camera->y;
 					SDL_RenderCopy(renderer, graphics->texture, NULL, physics->getPosition());
-					
-					physics->collider->x = physics->collider->x - camera->x;
-					physics->collider->y = physics->collider->y - camera->y;
-
-					SDL_RenderDrawRect(renderer, physics->collider);
-					physics->collider->x = physics->collider->x + camera->x;
-					physics->collider->y = physics->collider->y + camera->y;
-
-
-
 				}
 			}
 		}
-		//printCollisionBuckets();
 	}
 	void input(SDL_Event e)
 	{
@@ -198,19 +186,19 @@ public:
 			{
 			case SDLK_UP:
 				physics->setYVelocity(-1.0 * physics->getSpeed());
-				physics->setXVelocity(0);
+				//physics->setXVelocity(0);
 				break;
 			case SDLK_DOWN:
 				physics->setYVelocity(physics->getSpeed());
-				physics->setXVelocity(0);
+				//physics->setXVelocity(0);
 				break;
 			case SDLK_LEFT:
 				physics->setXVelocity(-1.0 * physics->getSpeed());
-				physics->setYVelocity(0);
+				//physics->setYVelocity(0);
 				break;
 			case SDLK_RIGHT:
 				physics->setXVelocity(physics->getSpeed());
-				physics->setYVelocity(0);
+				//physics->setYVelocity(0);
 				break;
 			default:
 				break;
@@ -247,5 +235,4 @@ private:
 	Uint32 inputControlled = 0;
 	std::unordered_map<Uint32, PhysicsComponent*> physicsComponents;
 	std::unordered_map<Uint32, GraphicsComponent*> graphicsComponents;
-
 };

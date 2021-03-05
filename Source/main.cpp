@@ -161,37 +161,29 @@ int main( int argc, char* args[] )
 			ECSManager* ecsManager = new ECSManager(world);
 			
 			Uint32 player = ecsManager->generateEntity();
-			ecsManager->addPhysicsComponent(player, new PhysicsComponent(SCREEN_WIDTH / 2 - SIZE / 2, SCREEN_HEIGHT / 2 - SIZE / 2, 0.2 * (SIZE / 50), SIZE));
+			ecsManager->addPhysicsComponent(player, new PhysicsComponent(275, 245, 0.2 * (SIZE / 50), SIZE));
 			ecsManager->addGraphicsComponent(player, new GraphicsComponent(texture));
-			Uint32 enemy = ecsManager->generateEntity();
-			ecsManager->addPhysicsComponent(enemy,new PhysicsComponent(120, 120, 0.2 * (SIZE / 50), SIZE));
-			ecsManager->addGraphicsComponent(enemy, new GraphicsComponent(texture));
-			/*Entity* enemy2 = new Entity("enemy");
-			enemy2->physics = new PhysicsComponent(120, 120, 0.2 * (SIZE / 50), SIZE, WORLD_WIDTH, WORLD_HEIGHT);
-			enemy2->graphics = new GraphicsComponent(texture);
-			Entity* enemy3 = new Entity("enemy");
-			enemy3->physics = new PhysicsComponent(120, 120, 0.2 * (SIZE / 50), SIZE, WORLD_WIDTH, WORLD_HEIGHT);
-			enemy3->graphics = new GraphicsComponent(texture);
-			Entity* enemy4 = new Entity("enemy");
-			enemy4->physics = new PhysicsComponent(120, 120, 0.2 * (SIZE / 50), SIZE, WORLD_WIDTH, WORLD_HEIGHT);
-			enemy4->graphics = new GraphicsComponent(texture);
-			Entity* enemy5 = new Entity("enemy");
-			enemy5->physics = new PhysicsComponent(120, 120, 0.2 * (SIZE / 50), SIZE, WORLD_WIDTH, WORLD_HEIGHT);
-			enemy5->graphics = new GraphicsComponent(texture);
-			Entity* enemy6 = new Entity("enemy");
-			enemy6->physics = new PhysicsComponent(120, 120, 0.2 * (SIZE / 50), SIZE, WORLD_WIDTH, WORLD_HEIGHT);
-			enemy6->graphics = new GraphicsComponent(texture);
-			Entity* enemy7 = new Entity("enemy");
-			enemy7->physics = new PhysicsComponent(120, 120, 0.2 * (SIZE / 50), SIZE, WORLD_WIDTH, WORLD_HEIGHT);
-			enemy7->graphics = new GraphicsComponent(texture);*/
 
+			Uint32 enemies[16];
+			for (int i = 0; i < 4; i++)
+			{
+				for (int j = 0; j < 4; j++)
+				{
+					enemies[i * 4 + j] = ecsManager->generateEntity();
+					ecsManager->addPhysicsComponent(enemies[i * 4 + j],new PhysicsComponent(150 + 250 * i, 120 + 250 * j, 0.2 * (SIZE / 50), SIZE));
+					ecsManager->addGraphicsComponent(enemies[i * 4 + j], new GraphicsComponent(texture));		
+				}
+			}
 
+			// Uint32 enemy = ecsManager->generateEntity();
+			// ecsManager->addPhysicsComponent(enemy,new PhysicsComponent(150, 120, 0.2 * (SIZE / 50), SIZE));
+			// ecsManager->addGraphicsComponent(enemy, new GraphicsComponent(texture));
 			 
 			SDL_Color textColor = {0,0,0};
 			Text* text = new Text(font, textColor);
 			text->setText("Hello there", renderer);
 			text->setPosition(0, SCREEN_HEIGHT - text->getRect()->h);
-
+			ecsManager->render(renderer, camera->returnRect());
 			while (!quit)
 			{
 
@@ -207,8 +199,9 @@ int main( int argc, char* args[] )
 
 				}
 				//world logic update with delta T
+				
 				ecsManager->update(deltaT);
-				text->setText(std::to_string((ecsManager->getPhysicsComponent(player))->getPosition()->x) + ", " + std::to_string((ecsManager->getPhysicsComponent(player))->getPosition()->y), renderer);
+				//text->setText(std::to_string((ecsManager->getPhysicsComponent(player))->getPosition()->x) + ", " + std::to_string((ecsManager->getPhysicsComponent(player))->getPosition()->y), renderer);
 
 				//prevTime = SDL_GetTicks();
 				
@@ -222,8 +215,14 @@ int main( int argc, char* args[] )
 				
 				prevTime = SDL_GetTicks();
 
-				//rendering
 
+				int fps = 1000.0/(deltaT+1.0);
+				if (prevTime % 100 == 0)
+				{
+					text->setText(std::to_string(fps), renderer);
+				}
+				//rendering
+				
 				//clear renderer
 				SDL_RenderClear(renderer);
 				//render tilemap (use multiple tilemaps for more depth)

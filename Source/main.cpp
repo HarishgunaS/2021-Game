@@ -3,10 +3,8 @@
 //#include "Tilemap.h"
 #include "Camera.h"
 #include "Text.h"
-#include "Entity.h"
 #include "ECSManager.h"
 #include "World.h"
-//#include "Player.h" included in Camera.h
 
 #ifdef _WIN32
 #include <SDL.h>
@@ -19,17 +17,20 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 #endif
+
+#include "LuaHelper.h"
+
 #define ORIGINAL_SIZE 200.0
-#define SIZE 100.0
-const int SCREEN_WIDTH = 8*(SIZE);
-const int SCREEN_HEIGHT = 8*(SIZE);
-const int WORLD_WIDTH = 10*(SIZE);
-const int WORLD_HEIGHT = 10*(SIZE);
+#define SIZE 32.0
+const int SCREEN_WIDTH = 14*(SIZE);
+const int SCREEN_HEIGHT = 15*(SIZE);
+
 bool init();
 bool loadMedia();
 void close();
-
 SDL_Texture* loadTexture(std::string path);
+SDL_Texture* loadTexture(std::string path);
+Uint32 entityFromLua(LuaRef entity, ECSManager* manager);
 
 SDL_Window* window = NULL;
 
@@ -85,8 +86,7 @@ bool init()
 }
 
 
-
-bool loadMedia()
+bool loadMedia(lua_State* L)
 {
 	bool success = true;
 	font = TTF_OpenFont( "../Resources/gothic_pixel.ttf", SIZE );
@@ -95,7 +95,7 @@ bool loadMedia()
         printf( "Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError() );
         success = false;
     }
-	texture = loadTexture("../Resources/bmp_24.bmp");
+	texture = loadTexture("../Resources/MysticChroma_Basics.png");
 	if (texture == NULL)
 	{
 		printf("image load error %s\n", SDL_GetError());
@@ -140,54 +140,100 @@ SDL_Texture* loadTexture(std::string path)
 
 	return newTexture;
 }
+
+Uint32 entityFromLua(LuaRef entity, ECSManager* manager)
+{
+	Uint32 id;
+	if (!entity["name"].isNil())
+	{
+		id = manager->generateEntity(entity["name"].cast<std::string>());
+	}
+	else
+	{
+		id = manager->generateEntity();
+	}
+	if (!entity["physics"].isNil())
+	{
+		LuaRef physics = entity["physics"];
+		manager->addPhysicsComponent(id, new PhysicsComponent(physics["x"].cast<int>(), physics["y"].cast<int>(), physics["speed"].cast<double>(), physics["size"].cast<int>()));
+	}
+	if (!entity["graphics"].isNil())
+	{
+		LuaRef graphics = entity["graphics"];
+		manager->addGraphicsComponent(id, new GraphicsComponent(loadTexture(graphics["path"].cast<std::string>())));
+	}
+	if (!entity["combat"].isNil())
+	{
+		LuaRef combat = entity["combat"];
+		manager->addCombatComponent(id, new CombatComponent(combat["health"].cast<int>(), combat["attack"].cast<int>(), combat["defense"].cast<int>(), combat["cooldown"].cast<int>()));
+	}
+	return id;
+}
+
 int main( int argc, char* args[] )
 {
 	if (init())
 	{
-		if (loadMedia())
+		lua_State* L = luaL_newstate();
+		if (luaL_loadfile(L, "../Scripts/script.lua") || lua_pcall(L, 0, 0, 0)) {
+			printf("script not loading\n");
+		}
+		luaL_dofile(L, "../Scripts/script.lua");
+		luaL_openlibs(L);
+		lua_pcall(L, 0, 0, 0);
+		if (loadMedia(L))
 		{
 			//logic initialization
-
 			bool quit = false;
 			SDL_Event e;
 			Uint32 sumDeltaT = 0;
 			Uint32 prevTime = SDL_GetTicks();
-			int arr[100] = {0,1,3,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-			Camera* camera = new Camera(WORLD_WIDTH, WORLD_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0);
-			
-			Tilemap* tilemap = new Tilemap(arr, 10, 10, SIZE, ORIGINAL_SIZE, texture); //(use multiple tilemaps for more depth)
-			
-			World* world = new World(tilemap);
-			ECSManager* ecsManager = new ECSManager(world);
-			
-			Uint32 player = ecsManager->generateEntity();
-			ecsManager->addPhysicsComponent(player, new PhysicsComponent(275, 245, 0.2 * (SIZE / 50), SIZE));
-			ecsManager->addGraphicsComponent(player, new GraphicsComponent(texture));
 
-			Uint32 enemies[16];
-			for (int i = 0; i < 4; i++)
+			LuaRef map = getGlobal(L, "map");
+			if (map.isNil())
 			{
-				for (int j = 0; j < 4; j++)
-				{
-					enemies[i * 4 + j] = ecsManager->generateEntity();
-					ecsManager->addPhysicsComponent(enemies[i * 4 + j],new PhysicsComponent(150 + 250 * i, 120 + 250 * j, 0.2 * (SIZE / 50), SIZE));
-					ecsManager->addGraphicsComponent(enemies[i * 4 + j], new GraphicsComponent(texture));		
-				}
+				printf("error\n");
 			}
+			LuaRef entities = getGlobal(L, "entities");
+			LuaRef layerOne = map["layers"][1];
+			Tilemap* tilemap = new Tilemap(layerOne, SIZE, map["tilewidth"].cast<int>(), texture, 6); //(use multiple tilemaps for more depth)
+			World* world = new World(tilemap);
 
-			// Uint32 enemy = ecsManager->generateEntity();
-			// ecsManager->addPhysicsComponent(enemy,new PhysicsComponent(150, 120, 0.2 * (SIZE / 50), SIZE));
-			// ecsManager->addGraphicsComponent(enemy, new GraphicsComponent(texture));
-			 
+			Camera* camera = new Camera(world->WORLD_WIDTH, world->WORLD_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0);
+			
+
+
 			SDL_Color textColor = {0,0,0};
+			ECSManager* ecsManager = new ECSManager(renderer, world, font, textColor);
+
+			int numEntities = entities["count"].cast<int>();
+			LuaRef entityArray = entities["array"];
+			for (int i = 0; i < numEntities; i++)
+			{
+				LuaRef entity = entityArray[i + 1];
+				entityFromLua(entity, ecsManager);
+			}
+			Uint32 player = ecsManager->getIDfromName("player");
+			 
+			
 			Text* text = new Text(font, textColor);
 			text->setText("Hello there", renderer);
-			text->setPosition(0, SCREEN_HEIGHT - text->getRect()->h);
-			ecsManager->render(renderer, camera->returnRect());
+			text->setPosition(10, 10);
+			ecsManager->render(camera->returnRect());
+			ecsManager->speak("hi there", -1);
+			int maxFPS = 144;
+			int minTime = 1000/maxFPS;
+
 			while (!quit)
 			{
 
 				Uint32 deltaT = SDL_GetTicks() - prevTime;
+				
+				if (deltaT < minTime)
+				{
+					SDL_Delay(minTime - deltaT);
+					deltaT = minTime;
+				}
 				//Event manager
 				while (SDL_PollEvent(&e) != 0)
 				{
@@ -201,6 +247,7 @@ int main( int argc, char* args[] )
 				//world logic update with delta T
 				
 				ecsManager->update(deltaT);
+				
 				//text->setText(std::to_string((ecsManager->getPhysicsComponent(player))->getPosition()->x) + ", " + std::to_string((ecsManager->getPhysicsComponent(player))->getPosition()->y), renderer);
 
 				//prevTime = SDL_GetTicks();
@@ -216,7 +263,7 @@ int main( int argc, char* args[] )
 				prevTime = SDL_GetTicks();
 
 
-				int fps = 1000.0/(deltaT+1.0);
+				int fps = 1000.0/(deltaT);
 				if (prevTime % 100 == 0)
 				{
 					text->setText(std::to_string(fps), renderer);
@@ -228,7 +275,7 @@ int main( int argc, char* args[] )
 				//render tilemap (use multiple tilemaps for more depth)
 				tilemap->render(renderer, camera->returnRect());
 				//render player
-				ecsManager->render(renderer, camera->returnRect());
+				ecsManager->render(camera->returnRect());
 				//render text
 				text->render(renderer);
 				//present frame

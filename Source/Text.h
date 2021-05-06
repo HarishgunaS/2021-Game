@@ -1,3 +1,4 @@
+#pragma once
 #ifdef _WIN32
 #include <SDL.h>
 #include <SDL_image.h>
@@ -21,6 +22,14 @@ public:
         texture = NULL;
         textPosition = new SDL_Rect();
         color = c;
+    }
+    ~Text()
+    {
+        SDL_DestroyTexture(texture);
+        texture = NULL;
+        font = NULL;
+        delete textPosition;
+        textPosition = NULL;
     }
     void setText(std::string string, SDL_Renderer* renderer)
     {

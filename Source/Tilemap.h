@@ -9,33 +9,45 @@
 #endif
 #include <stdio.h>
 
+#include "LuaHelper.h"
+
 class Tilemap
 {
 public:
-    Tilemap(int* arr, int w, int h, int size, int original_size, SDL_Texture* t)
-     : arr(arr)
-     , w(w)
-     , h(h)
-     , size(size)
-     , textures(t)
-     , original_size(original_size)
-     { }
+    Tilemap(LuaRef luaLayer, int s, int original_s, SDL_Texture* t, int col)
+    {
+        columns = col;
+        size = s;
+        original_size = original_s;
+        w = luaLayer["width"].cast<int>();
+        h = luaLayer["height"].cast<int>();
+        arr = getLuaArray<int>(luaLayer["data"], w*h);
+        textures = t;
+
+    }
+    SDL_Rect getTileRect(int i)
+    {
+        int row = i / columns;
+        int column = i - row * columns;
+        SDL_Rect src = SDL_Rect();
+        src.w = original_size;
+        src.h = original_size;
+        src.x = column * original_size;
+        src.y = row * original_size;
+        return src;
+    }
     void render(SDL_Renderer* renderer, SDL_Rect* camera)
     {
         SDL_Rect pos = SDL_Rect();
         pos.w = size;
         pos.h = size;
-        SDL_Rect src = SDL_Rect();
-        src.w = original_size;
-        src.h = original_size;
-        src.y = 0;
         for (int i = 0; i < w; i++)
         {
             for (int j = 0; j < h; j++)
             {
                 pos.x = i*size;
                 pos.y = j*size;
-                src.x = arr[j*w + i]*original_size;
+                SDL_Rect src = getTileRect(arr[j*w + i] - 1);
                 if (SDL_HasIntersection(&pos, camera) == SDL_TRUE)
                 {
                     
@@ -47,8 +59,14 @@ public:
             }
         }
     }
+    ~Tilemap()
+    {
+        delete arr;
+        arr = NULL;
+    }
     int w, h, size, original_size;
     int* arr;
+    int columns;
     SDL_Texture* textures;
 
 };
